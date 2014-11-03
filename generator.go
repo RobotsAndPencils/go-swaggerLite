@@ -13,14 +13,9 @@ import (
 	"github.com/RobotsAndPencils/go-swaggerLite/parser"
 )
 
-const (
-	AVAILABLE_FORMATS = "go|swagger|asciidoc|markdown|confluence"
-)
-
 var apiPackage = flag.String("apiPackage", "", "The package that implements the API controllers, relative to $GOPATH/src")
 var mainApiFile = flag.String("mainApiFile", "", "The file that contains the general API annotations, relative to $GOPATH/src")
 var basePath = flag.String("basePath", "", "Web service base path")
-var outputSpec = flag.String("output", "", "Output (path) for the generated file(s)")
 
 var generatedFileTemplate = `
 package main
