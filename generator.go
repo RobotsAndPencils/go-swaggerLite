@@ -28,7 +28,7 @@ import (
 
 func swaggerApiHandler(prefix string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		resource := strings.TrimPrefix(r.RequestURI, prefix)
+		resource := strings.TrimPrefix(r.URL.Path, prefix)
 		resource = strings.Trim(resource, "/")
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
