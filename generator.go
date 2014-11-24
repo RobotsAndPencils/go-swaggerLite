@@ -16,9 +16,10 @@ import (
 var apiPackage = flag.String("apiPackage", "", "The package that implements the API controllers, relative to $GOPATH/src")
 var mainApiFile = flag.String("mainApiFile", "", "The file that contains the general API annotations, relative to $GOPATH/src")
 var basePath = flag.String("basePath", "", "Web service base path")
+var output = flag.String("output", "generatedSwaggerSpec.go", "The opitonal name of the output file to be generated")
+var generatedPackage = flag.String("package", "main", "The opitonal package name of the output file to be generated")
 
-var generatedFileTemplate = `
-package main
+var generatedFileTemplate = `package {{generagedPackage}}
 //This file is generated automatically. Do not edit it manually.
 
 import (
@@ -26,10 +27,21 @@ import (
 	"strings"
 )
 
-func swaggerApiHandler(prefix string) http.HandlerFunc {
+func SwaggerApiHandler(prefix string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resource := strings.TrimPrefix(r.URL.Path, prefix)
-		resource = strings.Trim(resource, "/")
+		resource = strings.Trim(resource, "/")		
+
+		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "accept, authorization, content-type")
+			w.Header().Set("Access-Control-Max-Age", "1800")
+			w.WriteHeader(204)
+			return
+		}
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET")
@@ -59,7 +71,7 @@ func IsController(funcDeclaration *ast.FuncDecl) bool {
 }
 
 func generateSwaggerDocs(parser *parser.Parser) {
-	fd, err := os.Create(path.Join("./", "generatedSwaggerSpec.go"))
+	fd, err := os.Create(path.Join("./", *output))
 	if err != nil {
 		log.Fatalf("Can not create document file: %v\n", err)
 	}
@@ -80,6 +92,7 @@ func generateSwaggerDocs(parser *parser.Parser) {
 
 	doc := strings.Replace(generatedFileTemplate, "{{resourceListing}}", "`"+string(parser.GetResourceListingJson())+"`", -1)
 	doc = strings.Replace(doc, "{{apiDescriptions}}", "map[string]string{"+apiDescriptions.String()+"}", -1)
+	doc = strings.Replace(doc, "{{generagedPackage}}", *generatedPackage, -1)
 
 	fd.WriteString(doc)
 }
