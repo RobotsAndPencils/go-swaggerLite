@@ -116,7 +116,7 @@ func (operation *Operation) ParseParamComment(commentLine string) error {
 	swaggerParameter := Parameter{}
 	paramString := strings.TrimSpace(commentLine[len("@Param "):])
 
-	re := regexp.MustCompile(`([\w]+)[\s]+([\w]+)[\s]+([\w.]+)[\s]+([\w]+)[\s]+"([^"]+)"`)
+	re := regexp.MustCompile(`([-\w]+)[\s]+([\w]+)[\s]+([\w.]+)[\s]+([\w]+)[\s]+"([^"]+)"`)
 
 	if matches := re.FindStringSubmatch(paramString); len(matches) != 6 {
 		return fmt.Errorf("Can not parse param comment \"%s\", skipped.", paramString)
@@ -126,7 +126,8 @@ func (operation *Operation) ParseParamComment(commentLine string) error {
 		swaggerParameter.ParamType = matches[2]
 		swaggerParameter.Type = matches[3]
 		swaggerParameter.DataType = matches[3]
-		swaggerParameter.Required = strings.ToLower(matches[4]) == "true"
+		requiredText := strings.ToLower(matches[4])
+		swaggerParameter.Required = (requiredText == "true" || requiredText == "required")
 		swaggerParameter.Description = matches[5]
 
 		operation.Parameters = append(operation.Parameters, swaggerParameter)
