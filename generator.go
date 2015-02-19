@@ -10,12 +10,18 @@ import (
 	"path"
 	"strings"
 
+	"github.com/RobotsAndPencils/go-swaggerLite/markup"
 	"github.com/RobotsAndPencils/go-swaggerLite/parser"
+)
+
+const (
+	AVAILABLE_FORMATS = "go|markdown"
 )
 
 var apiPackage = flag.String("apiPackage", "", "The package that implements the API controllers, relative to $GOPATH/src")
 var mainApiFile = flag.String("mainApiFile", "", "The file that contains the general API annotations, relative to $GOPATH/src")
 var basePath = flag.String("basePath", "", "Web service base path")
+var outputFormat = flag.String("format", "go", "Output format type for the generated files: "+AVAILABLE_FORMATS)
 var output = flag.String("output", "generatedSwaggerSpec.go", "The opitonal name of the output file to be generated")
 var generatedPackage = flag.String("package", "main", "The opitonal package name of the output file to be generated")
 
@@ -133,6 +139,16 @@ func main() {
 	parser.ParseApi(*apiPackage)
 	log.Println("Finish parsing")
 
-	generateSwaggerDocs(parser)
+	format := strings.ToLower(*outputFormat)
+	switch format {
+	case "go":
+		generateSwaggerDocs(parser)
+		log.Println("Doc file generated")
+	case "markdown":
+		markup.GenerateMarkup(parser, new(markup.MarkupMarkDown), output, ".md")
+		log.Println("MarkDown file generated")
+	default:
+		log.Fatalf("Invalid -format specified. Must be one of %v.", AVAILABLE_FORMATS)
+	}
 
 }
