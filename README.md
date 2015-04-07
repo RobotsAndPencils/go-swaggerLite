@@ -126,13 +126,13 @@ Quick Start Guide
 
 4. This will generate a `generatedSwaggerSpec.go` in `package main`. In this a `swaggerApiHandler` function is expossed that takes a URI path prefeix (to strip off) and returns a `http.HandlerFunc`. You might map this via a Gorilla Mux router like:
 
-    r := mux.NewRouter()
-    // ...
-    r.HandleFunc("/spec", swaggerApiHandler("/spec"))
-    spec := r.PathPrefix("/spec").Subrouter()
-    spec.HandleFunc("/{resource:.*}", swaggerApiHandler("/spec"))
-    // ...
-    http.Handle("/", r)
+        r := mux.NewRouter()
+        // ...
+        r.HandleFunc("/spec", swaggerApiHandler("/spec"))
+        spec := r.PathPrefix("/spec").Subrouter()
+        spec.HandleFunc("/{resource:.*}", swaggerApiHandler("/spec"))
+        // ...
+        http.Handle("/", r)
 
 5. Your Swagger API JSON description can be found out `<origin>/spec`. 
 
