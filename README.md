@@ -117,7 +117,10 @@ Quick Start Guide
 1. Add comments to your API source code.
 2. Install `go get github.com/RobotsAndPencils/go-swaggerLite`
 3. Run generator from your project:
-    `go-swaggerLite -apiPackage="github.com/myuser/myproject" -mainApiFile="my_cool_api/web/main.go" -basePath="http://127.0.0.1:3000"`
+
+        go-swaggerLite -apiPackage="github.com/myuser/myproject" \
+            -mainApiFile="github.com/myuser/myproject/web/main.go" \
+            -basePath="http://127.0.0.1:3000"
 
     Command line switches are:
     * -apiPackage  - package with API controllers implementation
@@ -126,20 +129,18 @@ Quick Start Guide
 
 4. This will generate a `generatedSwaggerSpec.go` in `package main`. In this a `swaggerApiHandler` function is expossed that takes a URI path prefeix (to strip off) and returns a `http.HandlerFunc`. You might map this via a Gorilla Mux router like:
 
-    r := mux.NewRouter()
-    // ...
-    r.HandleFunc("/spec", swaggerApiHandler("/spec"))
-    spec := r.PathPrefix("/spec").Subrouter()
-    spec.HandleFunc("/{resource:.*}", swaggerApiHandler("/spec"))
-    // ...
-    http.Handle("/", r)
+        r := mux.NewRouter()
+        // ...
+        r.HandleFunc("/spec", SwaggerApiHandler("/spec"))
+        spec := r.PathPrefix("/spec").Subrouter()
+        spec.HandleFunc("/{resource:.*}", SwaggerApiHandler("/spec"))
+        // ...
+        http.Handle("/", r)
 
-5. Your Swagger API JSON description can be found out `<origin>/spec`. 
+5. Your Swagger API JSON description can be found out `<origin>/spec`.
 
 Known Limitations
 -----------------
 
 * Interface types are not supported, because it's not possible to resolve them to actual implementations are parse-time. All interface values will be displayed just as "interface".
 * Types that implement the Marshaler/Unmarshaler interface. Marshaling of this types will produce unpredictable JSON (at parse-time).
-
-
