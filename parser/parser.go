@@ -46,13 +46,13 @@ func (parser *Parser) IsImplementMarshalInterface(typeName string) bool {
 	return ok
 }
 
-//Read web/main.go to get General info
-func (parser *Parser) ParseGeneralApiInfo(mainApiFile string) {
+// ParseGeneralAPIInfo reads web/main.go to get General info
+func (parser *Parser) ParseGeneralAPIInfo(mainAPIFile string) error {
 
 	fileSet := token.NewFileSet()
-	fileTree, err := goparser.ParseFile(fileSet, mainApiFile, nil, goparser.ParseComments)
+	fileTree, err := goparser.ParseFile(fileSet, mainAPIFile, nil, goparser.ParseComments)
 	if err != nil {
-		log.Fatalf("Can not parse general API information: %v\n", err)
+		return err
 	}
 
 	parser.Listing.SwaggerVersion = SwaggerVersion
@@ -79,6 +79,7 @@ func (parser *Parser) ParseGeneralApiInfo(mainApiFile string) {
 			}
 		}
 	}
+	return nil
 }
 
 func (parser *Parser) GetResourceListingJson() []byte {
