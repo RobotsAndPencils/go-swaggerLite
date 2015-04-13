@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"go/ast"
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/RobotsAndPencils/go-swaggerLite/markup"
@@ -36,7 +38,7 @@ import (
 func SwaggerApiHandler(prefix string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		resource := strings.TrimPrefix(r.URL.Path, prefix)
-		resource = strings.Trim(resource, "/")		
+		resource = strings.Trim(resource, "/")
 
 		if r.Method == "OPTIONS" {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -135,7 +137,20 @@ func main() {
 	}
 
 	log.Println("Start parsing")
-	parser.ParseGeneralApiInfo(path.Join(gopath, "src", *mainApiFile))
+	gopaths := filepath.SplitList(gopath)
+	var err error
+	var errs string
+	for _, gop := range gopaths {
+		err = parser.ParseGeneralAPIInfo(path.Join(gop, "src", *mainApiFile))
+		if err != nil {
+			errs += fmt.Sprintf("    %s\n", err)
+		} else {
+			break
+		}
+	}
+	if err != nil {
+		log.Fatalf("Error locating main API File:\n%s", errs)
+	}
 	parser.ParseApi(*apiPackage)
 	log.Println("Finish parsing")
 
