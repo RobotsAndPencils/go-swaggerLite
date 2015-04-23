@@ -120,12 +120,18 @@ func (parser *Parser) CheckRealPackagePath(packagePath string) string {
 			}
 		}
 	}
+	// Package not found in $GOPATH, try $GOROOT
 	if pkgRealpath == "" {
 		goroot := filepath.Clean(runtime.GOROOT())
 		if goroot == "" {
 			log.Fatalf("Please, set $GOROOT environment variable\n")
 		}
 		if evalutedPath, err := filepath.EvalSymlinks(filepath.Join(goroot, "src", packagePath)); err == nil {
+			if _, err := os.Stat(evalutedPath); err == nil {
+				pkgRealpath = evalutedPath
+			}
+			// Go distros put source in the src/pkg directory
+		} else if evalutedPath, err := filepath.EvalSymlinks(filepath.Join(goroot, "src", "pkg", packagePath)); err == nil {
 			if _, err := os.Stat(evalutedPath); err == nil {
 				pkgRealpath = evalutedPath
 			}
@@ -140,7 +146,6 @@ func (parser *Parser) GetRealPackagePath(packagePath string) string {
 	if pkgRealpath == "" {
 		log.Fatalf("Can not find package %s \n", packagePath)
 	}
-
 	return pkgRealpath
 }
 
