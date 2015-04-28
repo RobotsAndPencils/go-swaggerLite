@@ -1,10 +1,9 @@
-package parser_test
+package parser
 
 import (
 	"fmt"
 	"go/ast"
 
-	"github.com/RobotsAndPencils/go-swaggerLite/parser"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	//	"log"
@@ -16,7 +15,7 @@ import (
 
 type ParserSuite struct {
 	suite.Suite
-	parser *parser.Parser
+	parser *Parser
 }
 
 // It must return true if funcDeclaration is controller. We will try to parse only comments before controllers
@@ -30,12 +29,12 @@ func IsController(funcDeclaration *ast.FuncDecl) bool {
 	return false
 }
 
-var initialisedParser2 *parser.Parser
+var initialisedParser2 *Parser
 var exampleBasePath = "http://127.0.0.1:3000/"
 
 func (suite *ParserSuite) SetupSuite() {
 	if initialisedParser2 == nil {
-		initialisedParser2 = parser.NewParser()
+		initialisedParser2 = NewParser()
 
 		initialisedParser2.BasePath = exampleBasePath
 		initialisedParser2.IsController = IsController
@@ -45,7 +44,7 @@ func (suite *ParserSuite) SetupSuite() {
 			suite.T().Fatalf("Please, set $GOPATH environment variable\n")
 		}
 
-		initialisedParser2.ParseGeneralApiInfo(path.Join(gopath, "src", "github.com/RobotsAndPencils/go-swaggerLite/example/web/main.go"))
+		initialisedParser2.ParseGeneralAPIInfo(path.Join(gopath, "src", "github.com/RobotsAndPencils/go-swaggerLite/example/web/main.go"))
 		initialisedParser2.ParseApi("github.com/RobotsAndPencils/go-swaggerLite/example")
 	}
 	suite.parser = initialisedParser2
@@ -65,7 +64,7 @@ func (suite *ParserSuite) TestTopLevelAPI() {
 		assert.NotEmpty(suite.T(), topApi.SwaggerVersion, "Swagger version not filled")
 		assert.Equal(suite.T(), topApi.ResourcePath, "/testapi", "Resource path invalid")
 
-		expectedTypes := []string{parser.ContentTypeJson}
+		expectedTypes := []string{ContentTypeJson}
 		assert.Equal(suite.T(), topApi.Produces, expectedTypes, "Produced types not added correctly")
 		assert.Equal(suite.T(), topApi.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -74,7 +73,7 @@ func (suite *ParserSuite) TestTopLevelAPI() {
 	}
 }
 
-func (suite *ParserSuite) CheckSubApiList(topApi *parser.ApiDeclaration) {
+func (suite *ParserSuite) CheckSubApiList(topApi *ApiDeclaration) {
 	assert.Len(suite.T(), topApi.Apis, 9, "Sub API was not parsed corectly")
 
 	for _, subApi := range topApi.Apis {
@@ -130,14 +129,14 @@ func (suite *ParserSuite) CheckSubApiList(topApi *parser.ApiDeclaration) {
 	}
 }
 
-func (suite *ParserSuite) CheckGetStringByInt(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetStringByInt(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetStringByInt", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "string", op.Type, "Type not parsed")
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-string-by-int/{some_id}", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -147,14 +146,14 @@ func (suite *ParserSuite) CheckGetStringByInt(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 1, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetStructByInt(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetStructByInt(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetStructByInt", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "github.com.RobotsAndPencils.go-swaggerLite.example.StructureWithEmbededStructure", op.Type, "Type not parsed")
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-struct-by-int/{some_id}", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -164,14 +163,14 @@ func (suite *ParserSuite) CheckGetStructByInt(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetStruct2ByInt(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetStruct2ByInt(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetStruct2ByInt", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "github.com.RobotsAndPencils.go-swaggerLite.example.StructureWithEmbededPointer", op.Type, "Type not parsed")
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-struct2-by-int/{some_id}", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -181,7 +180,7 @@ func (suite *ParserSuite) CheckGetStruct2ByInt(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetSimpleArrayByString(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetSimpleArrayByString(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetSimpleArrayByString", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "array", op.Type, "Type not parsed")
@@ -189,7 +188,7 @@ func (suite *ParserSuite) CheckGetSimpleArrayByString(op *parser.Operation) {
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-simple-array-by-string/{some_id}", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -199,7 +198,7 @@ func (suite *ParserSuite) CheckGetSimpleArrayByString(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 1, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetStructArrayByString(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetStructArrayByString(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetStructArrayByString", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "array", op.Type, "Type not parsed")
@@ -207,7 +206,7 @@ func (suite *ParserSuite) CheckGetStructArrayByString(op *parser.Operation) {
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-struct-array-by-string/{some_id}", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -217,14 +216,14 @@ func (suite *ParserSuite) CheckGetStructArrayByString(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetInterface(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetInterface(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetInterface", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "github.com.RobotsAndPencils.go-swaggerLite.example.InterfaceType", op.Type, "Type not parsed")
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-interface", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -233,14 +232,14 @@ func (suite *ParserSuite) CheckGetInterface(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetSimpleAliased(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetSimpleAliased(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetSimpleAliased", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "github.com.RobotsAndPencils.go-swaggerLite.example.SimpleAlias", op.Type, "Type not parsed")
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-simple-aliased", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -249,7 +248,7 @@ func (suite *ParserSuite) CheckGetSimpleAliased(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetArrayOfInterfaces(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetArrayOfInterfaces(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetArrayOfInterfaces", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "array", op.Type, "Type not parsed")
@@ -257,7 +256,7 @@ func (suite *ParserSuite) CheckGetArrayOfInterfaces(op *parser.Operation) {
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-array-of-interfaces", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -266,14 +265,14 @@ func (suite *ParserSuite) CheckGetArrayOfInterfaces(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckGetStruct3(op *parser.Operation) {
+func (suite *ParserSuite) CheckGetStruct3(op *Operation) {
 	assert.Equal(suite.T(), "GET", op.HttpMethod, "Http method not parsed")
 	assert.Equal(suite.T(), "GetStruct3", op.Nickname, "Nickname not parsed")
 	assert.Equal(suite.T(), "github.com.RobotsAndPencils.go-swaggerLite.example.StructureWithSlice", op.Type, "Type not parsed")
 
 	assert.Equal(suite.T(), op.Path, "/testapi/get-struct3", "Resource path invalid")
 
-	expectedTypes := []string{parser.ContentTypeJson}
+	expectedTypes := []string{ContentTypeJson}
 	assert.Equal(suite.T(), op.Produces, expectedTypes, "Produced types not added correctly")
 	assert.Equal(suite.T(), op.Consumes, expectedTypes, "Consumed types not added correctly")
 
@@ -283,7 +282,7 @@ func (suite *ParserSuite) CheckGetStruct3(op *parser.Operation) {
 	assert.Len(suite.T(), op.Models, 2, "Models not parsed %#v", op.Models)
 }
 
-func (suite *ParserSuite) CheckModelList(topApi *parser.ApiDeclaration) {
+func (suite *ParserSuite) CheckModelList(topApi *ApiDeclaration) {
 	assert.Len(suite.T(), topApi.Models, 7, "Models was not parsed corectly")
 
 	for _, model := range topApi.Models {
