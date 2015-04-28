@@ -86,11 +86,11 @@ func generateSwaggerDocs(parser *parser.Parser) {
 	defer fd.Close()
 
 	var apiDescriptions bytes.Buffer
-	for apiKey, apiDescription := range parser.TopLevelApis {
+	for _, apiKey := range sortedApiDeclarationKeys(parser.TopLevelApis) {
 		apiDescriptions.WriteString("\"" + apiKey + "\":")
 
 		apiDescriptions.WriteString("`")
-		json, err := json.MarshalIndent(apiDescription, "", "    ")
+		json, err := json.MarshalIndent(parser.TopLevelApis[apiKey], "", "    ")
 		if err != nil {
 			log.Fatalf("Can not serialise []ApiDescription to JSON: %v\n", err)
 		}
@@ -174,4 +174,16 @@ func getResourceListingJson(listing *parser.ResourceListing) []byte {
 		log.Fatalf("Can not serialise ResourceListing to JSON: %v\n", err)
 	}
 	return json
+}
+
+// returns sorted map keys, used for looping items in the map
+func sortedApiDeclarationKeys(m map[string]*parser.ApiDeclaration) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for key, _ := range m {
+		keys[i] = key
+		i++
+	}
+	sort.Strings(keys)
+	return keys
 }
