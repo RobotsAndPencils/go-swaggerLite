@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/RobotsAndPencils/go-swaggerLite/markup"
@@ -97,6 +98,9 @@ func generateSwaggerDocs(parser *parser.Parser) {
 		apiDescriptions.Write(json)
 		apiDescriptions.WriteString("`,")
 	}
+
+	// sort the apiRefs to ensure consistent output
+	sort.Sort(ListingByApiRefPath(parser.Listing.Apis))
 
 	doc := strings.Replace(generatedFileTemplate, "{{resourceListing}}", "`"+string(getResourceListingJson(parser.Listing))+"`", -1)
 	doc = strings.Replace(doc, "{{apiDescriptions}}", "map[string]string{"+apiDescriptions.String()+"}", -1)
@@ -187,3 +191,10 @@ func sortedApiDeclarationKeys(m map[string]*parser.ApiDeclaration) []string {
 	sort.Strings(keys)
 	return keys
 }
+
+// sort the ApiRef's in-place
+type ListingByApiRefPath []*parser.ApiRef
+
+func (a ListingByApiRefPath) Len() int           { return len(a) }
+func (a ListingByApiRefPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ListingByApiRefPath) Less(i, j int) bool { return a[i].Path < a[j].Path }
