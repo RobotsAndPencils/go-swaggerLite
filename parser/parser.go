@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"encoding/json"
 	"go/ast"
 	goparser "go/parser"
 	"go/token"
@@ -80,22 +79,6 @@ func (parser *Parser) ParseGeneralAPIInfo(mainAPIFile string) error {
 		}
 	}
 	return nil
-}
-
-func (parser *Parser) GetResourceListingJson() []byte {
-	json, err := json.MarshalIndent(parser.Listing, "", "    ")
-	if err != nil {
-		log.Fatalf("Can not serialise ResourceListing to JSON: %v\n", err)
-	}
-	return json
-}
-
-func (parser *Parser) GetApiDescriptionJson() []byte {
-	json, err := json.MarshalIndent(parser.TopLevelApis, "", "    ")
-	if err != nil {
-		log.Fatalf("Can not serialise []ApiDescription to JSON: %v\n", err)
-	}
-	return json
 }
 
 func (parser *Parser) CheckRealPackagePath(packagePath string) string {

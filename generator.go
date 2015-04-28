@@ -98,7 +98,7 @@ func generateSwaggerDocs(parser *parser.Parser) {
 		apiDescriptions.WriteString("`,")
 	}
 
-	doc := strings.Replace(generatedFileTemplate, "{{resourceListing}}", "`"+string(parser.GetResourceListingJson())+"`", -1)
+	doc := strings.Replace(generatedFileTemplate, "{{resourceListing}}", "`"+string(getResourceListingJson(parser.Listing))+"`", -1)
 	doc = strings.Replace(doc, "{{apiDescriptions}}", "map[string]string{"+apiDescriptions.String()+"}", -1)
 	doc = strings.Replace(doc, "{{generagedPackage}}", *generatedPackage, -1)
 
@@ -166,4 +166,12 @@ func main() {
 		log.Fatalf("Invalid -format specified. Must be one of %v.", AVAILABLE_FORMATS)
 	}
 
+}
+
+func getResourceListingJson(listing *parser.ResourceListing) []byte {
+	json, err := json.MarshalIndent(listing, "", "    ")
+	if err != nil {
+		log.Fatalf("Can not serialise ResourceListing to JSON: %v\n", err)
+	}
+	return json
 }
