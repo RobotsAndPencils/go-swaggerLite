@@ -5,6 +5,7 @@ go:
 
 install:
   - make init
+  - make exampledocs
 
 script:
   - make test
