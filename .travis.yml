@@ -1,0 +1,11 @@
+language: go
+
+go:
+  - 1.4.2
+
+install:
+  - make init
+  - make exampledocs
+
+script:
+  - make test

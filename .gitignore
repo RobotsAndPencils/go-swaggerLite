@@ -24,6 +24,7 @@ _testmain.go
 
 #ignore generated file
 docs.go
+generatedSwaggerSpec.go
 
 # IDE
 .idea
