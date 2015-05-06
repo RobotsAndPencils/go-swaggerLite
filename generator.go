@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/RobotsAndPencils/go-swaggerLite/markup"
@@ -86,11 +87,11 @@ func generateSwaggerDocs(parser *parser.Parser) {
 	defer fd.Close()
 
 	var apiDescriptions bytes.Buffer
-	for apiKey, apiDescription := range parser.TopLevelApis {
+	for _, apiKey := range sortedApiDeclarationKeys(parser.TopLevelApis) {
 		apiDescriptions.WriteString("\"" + apiKey + "\":")
 
 		apiDescriptions.WriteString("`")
-		json, err := json.MarshalIndent(apiDescription, "", "    ")
+		json, err := json.MarshalIndent(parser.TopLevelApis[apiKey], "", "    ")
 		if err != nil {
 			log.Fatalf("Can not serialise []ApiDescription to JSON: %v\n", err)
 		}
@@ -98,7 +99,10 @@ func generateSwaggerDocs(parser *parser.Parser) {
 		apiDescriptions.WriteString("`,")
 	}
 
-	doc := strings.Replace(generatedFileTemplate, "{{resourceListing}}", "`"+string(parser.GetResourceListingJson())+"`", -1)
+	// sort the apiRefs to ensure consistent output
+	sort.Sort(ListingByApiRefPath(parser.Listing.Apis))
+
+	doc := strings.Replace(generatedFileTemplate, "{{resourceListing}}", "`"+string(getResourceListingJson(parser.Listing))+"`", -1)
 	doc = strings.Replace(doc, "{{apiDescriptions}}", "map[string]string{"+apiDescriptions.String()+"}", -1)
 	doc = strings.Replace(doc, "{{generagedPackage}}", *generatedPackage, -1)
 
@@ -167,3 +171,30 @@ func main() {
 	}
 
 }
+
+func getResourceListingJson(listing *parser.ResourceListing) []byte {
+	json, err := json.MarshalIndent(listing, "", "    ")
+	if err != nil {
+		log.Fatalf("Can not serialise ResourceListing to JSON: %v\n", err)
+	}
+	return json
+}
+
+// returns sorted map keys, used for looping items in the map
+func sortedApiDeclarationKeys(m map[string]*parser.ApiDeclaration) []string {
+	keys := make([]string, len(m))
+	i := 0
+	for key, _ := range m {
+		keys[i] = key
+		i++
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// sort the ApiRef's in-place
+type ListingByApiRefPath []*parser.ApiRef
+
+func (a ListingByApiRefPath) Len() int           { return len(a) }
+func (a ListingByApiRefPath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ListingByApiRefPath) Less(i, j int) bool { return a[i].Path < a[j].Path }
