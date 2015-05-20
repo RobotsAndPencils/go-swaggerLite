@@ -56,11 +56,11 @@ func SwaggerApiHandler(prefix string) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Methods", "GET")
 
 		if resource == "" {
-			w.Write([]byte(swaggerResourceListing))
+			w.Write([]byte(SwaggerResourceListing))
 			return
 		}
 
-		if json, ok := swaggerApiDescriptions[resource]; ok {
+		if json, ok := SwaggerApiDescriptions[resource]; ok {
 			w.Write([]byte(json))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -69,8 +69,8 @@ func SwaggerApiHandler(prefix string) http.HandlerFunc {
 }
 
 
-var swaggerResourceListing = {{resourceListing}}
-var swaggerApiDescriptions = {{apiDescriptions}}
+var SwaggerResourceListing = {{resourceListing}}
+var SwaggerApiDescriptions = {{apiDescriptions}}
 `
 
 // It must return true if funcDeclaration is controller. We will try to parse only comments before controllers
