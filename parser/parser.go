@@ -211,6 +211,11 @@ func (parser *Parser) ScanPackages(packages []string) []string {
 					if idx := strings.Index(path, pkgRealPath+"/Godeps/"); idx != -1 {
 						return nil
 					}
+
+					// Ignore anything under a ./vendor directory
+					if idx := strings.Index(path, pkgRealPath+"/vendor/"); idx != -1 {
+						return nil
+					}
 					if idx := strings.Index(path, packageName); idx != -1 {
 						pack := path[idx:]
 						if v, ok := existsPackages[pack]; !ok || v == false {
