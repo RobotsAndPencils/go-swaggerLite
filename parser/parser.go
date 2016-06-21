@@ -219,6 +219,11 @@ func (parser *Parser) ScanPackages(packages []string) []string {
 						return nil
 					}
 
+					// Ignore anything under a ./.git directory
+					if idx := strings.Index(path, pkgRealPath+"/.git/"); idx != -1 {
+						return nil
+					}
+
 					// Ignore anything under a ./vendor directory
 					if idx := strings.Index(path, pkgRealPath+"/vendor/"); idx != -1 {
 						return nil
