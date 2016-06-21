@@ -112,6 +112,7 @@ func generateSwaggerDocs(parser *parser.Parser) {
 func InitParser() *parser.Parser {
 	parser := parser.NewParser()
 
+	parser.ApiPackage = *apiPackage
 	parser.BasePath = *basePath
 	parser.IsController = IsController
 

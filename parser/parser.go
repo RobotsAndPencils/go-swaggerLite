@@ -23,6 +23,7 @@ type Parser struct {
 	BasePath                          string
 	IsController                      func(*ast.FuncDecl) bool
 	TypesImplementingMarshalInterface map[string]string
+	ApiPackage                        string
 }
 
 func NewParser() *Parser {
@@ -96,9 +97,15 @@ func (parser *Parser) CheckRealPackagePath(packagePath string) string {
 	pkgRealpath := ""
 	gopathsList := filepath.SplitList(gopath)
 	for _, path := range gopathsList {
-		if evalutedPath, err := filepath.EvalSymlinks(filepath.Join(path, "src", packagePath)); err == nil {
-			if _, err := os.Stat(evalutedPath); err == nil {
-				pkgRealpath = evalutedPath
+		if vendorPath, err := filepath.EvalSymlinks(filepath.Join(path, "src", parser.ApiPackage, "vendor", packagePath)); err == nil {
+			if _, err := os.Stat(vendorPath); err == nil {
+				pkgRealpath = vendorPath
+				break
+			}
+		}
+		if goPath, err := filepath.EvalSymlinks(filepath.Join(path, "src", packagePath)); err == nil {
+			if _, err := os.Stat(goPath); err == nil {
+				pkgRealpath = goPath
 				break
 			}
 		}
