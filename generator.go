@@ -27,6 +27,7 @@ var basePath = flag.String("basePath", "", "Web service base path")
 var outputFormat = flag.String("format", "go", "Output format type for the generated files: "+AVAILABLE_FORMATS)
 var output = flag.String("output", "generatedSwaggerSpec.go", "The opitonal name of the output file to be generated")
 var generatedPackage = flag.String("package", "main", "The opitonal package name of the output file to be generated")
+var packageExclusionList = flag.String("packageExclusionList", "", "Comma delimited list of packages to report-continue vs. fail when not found")
 
 var generatedFileTemplate = `package {{generagedPackage}}
 //This file is generated automatically. Do not edit it manually.
@@ -112,7 +113,9 @@ func generateSwaggerDocs(parser *parser.Parser) {
 func InitParser() *parser.Parser {
 	parser := parser.NewParser()
 
+	parser.ApiPackage = *apiPackage
 	parser.BasePath = *basePath
+	parser.PackageExclusionList = exclusions(*packageExclusionList)
 	parser.IsController = IsController
 
 	parser.TypesImplementingMarshalInterface["NullString"] = "string"
@@ -190,6 +193,11 @@ func sortedApiDeclarationKeys(m map[string]*parser.ApiDeclaration) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+func exclusions(exclusionStr string) []string {
+	exclusionStr = strings.Replace(exclusionStr, " ", "", -1)
+	return strings.Split(exclusionStr, ",")
 }
 
 // sort the ApiRef's in-place
