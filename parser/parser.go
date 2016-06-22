@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"go/ast"
 	goparser "go/parser"
 	"go/token"
@@ -24,6 +25,7 @@ type Parser struct {
 	IsController                      func(*ast.FuncDecl) bool
 	TypesImplementingMarshalInterface map[string]string
 	ApiPackage                        string
+	PackageExclusionList              []string
 }
 
 func NewParser() *Parser {
@@ -39,6 +41,20 @@ func NewParser() *Parser {
 		PackageImports:                    make(map[string]map[string]string),
 		TypesImplementingMarshalInterface: make(map[string]string),
 	}
+}
+
+// The context package has moved to into the Go std library in Go17. The existing
+// golang.org/x/net/context package supports both pre-go17 and go17 cases but in so doing
+// includes a file with a `import "context"` that will not resolve. We log un-fatally in that case.
+func (parser *Parser) packageNotFoundError(packagePath string, err error) {
+	errStr := err.Error()
+	for _, exclusion := range parser.PackageExclusionList {
+		if packagePath == exclusion || packagePath == "" {
+			fmt.Printf(errStr)
+			return
+		}
+	}
+	log.Fatalf(errStr)
 }
 
 func (parser *Parser) IsImplementMarshalInterface(typeName string) bool {
@@ -134,7 +150,7 @@ func (parser *Parser) CheckRealPackagePath(packagePath string) string {
 func (parser *Parser) GetRealPackagePath(packagePath string) string {
 	pkgRealpath := parser.CheckRealPackagePath(packagePath)
 	if pkgRealpath == "" {
-		log.Fatalf("Can not find package %s \n", packagePath)
+		parser.packageNotFoundError(packagePath, fmt.Errorf("Can not find package %s \n", packagePath))
 	}
 	return pkgRealpath
 }
@@ -148,7 +164,7 @@ func (parser *Parser) GetPackageAst(packagePath string) map[string]*ast.Package 
 
 		astPackages, err := goparser.ParseDir(fileSet, packagePath, ParserFileFilter, goparser.ParseComments)
 		if err != nil {
-			log.Fatalf("Parse of %s pkg cause error: %s\n", packagePath, err)
+			parser.packageNotFoundError(packagePath, fmt.Errorf("Parse of %s pkg cause error: %s\n", packagePath, err.Error()))
 		}
 		parser.PackagesCache[packagePath] = astPackages
 		return astPackages
