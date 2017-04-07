@@ -126,6 +126,7 @@ Quick Start Guide
     * -apiPackage  - package with API controllers implementation
     * -mainApiFile - main API file. We will look for "General API info" in this file. If the mainApiFile command-line switch is left blank, then main.go is assumed (in the location specified by apiPackage).
     * -basePath    - Your API URL. Test requests will be sent to this URL
+    * -packageExclusionList - Comma delimited list of packages to report-continue vs. fail when not found
 
 4. This will generate a `generatedSwaggerSpec.go` in `package main`. In this a `swaggerApiHandler` function is expossed that takes a URI path prefeix (to strip off) and returns a `http.HandlerFunc`. You might map this via a Gorilla Mux router like:
 
